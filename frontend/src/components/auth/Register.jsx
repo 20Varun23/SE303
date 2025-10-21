@@ -34,7 +34,7 @@ export default function Register() {
         formData.password,
         formData.role
       );
-      alert('Registration successful! Please login.');
+      alert('Registration successful! Please Check your email.');
       navigate('/login');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
