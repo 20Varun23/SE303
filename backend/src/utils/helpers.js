@@ -1,19 +1,19 @@
-import crypto from "crypto";
+import crypto from 'crypto';
 
 // Suvarna start
 // Generate random token for email verification
 const generateVerificationToken = () => {
-  return crypto.randomBytes(32).toString("hex");
+  return crypto.randomBytes(32).toString('hex');
 };
 
 // Generate device fingerprint from request
 const generateDeviceFingerprint = (req) => {
-  const userAgent = req.headers["user-agent"] || "";
-  const ip = req.ip || req.connection.remoteAddress || "";
+  const userAgent = req.headers['user-agent'] || '';
+  const ip = req.ip || req.connection.remoteAddress || '';
   return crypto
-  .createHash("sha256")
+  .createHash('sha256')
   .update(userAgent + ip)
-  .digest("hex");
+  .digest('hex');
 };
 // Suvarna end
 

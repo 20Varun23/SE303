@@ -1,10 +1,10 @@
 // Suvarna
 
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { supabaseAdmin } from "../config/database.js";
-import { generateDeviceFingerprint } from "../utils/helpers.js";
-import { SESSION_TIMEOUT } from "../utils/constants.js";
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { supabaseAdmin } from '../config/database.js';
+import { generateDeviceFingerprint } from '../utils/helpers.js';
+import { SESSION_TIMEOUT } from '../utils/constants.js';
 
 // Register new user
 const register = async (req, res) => {
@@ -13,15 +13,15 @@ const register = async (req, res) => {
 
     // Check if email already exists
     const { data: existingUser } = await supabaseAdmin
-      .from("users")
-      .select("id")
-      .eq("email", email)
+      .from('users')
+      .select('id')
+      .eq('email', email)
       .single();
 
     if (existingUser!=null) {
       return res.status(400).json({
         success: false,
-        message: "Email already registered",
+        message: 'Email already registered',
       });
     }
 
@@ -31,7 +31,7 @@ const register = async (req, res) => {
 
     // Create user
     const { data: newUser, error } = await supabaseAdmin
-      .from("users")
+      .from('users')
       .insert([
         {
           name,
@@ -48,7 +48,7 @@ const register = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Registration successful. You can now login.",
+      message: 'Registration successful. You can now login.',
       data: {
         userId: newUser.id,
         name: newUser.name,
@@ -57,10 +57,10 @@ const register = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error('Registration error:', error);
     res.status(500).json({
       success: false,
-      message: "Registration failed",
+      message: 'Registration failed',
       error: error.message,
     });
   }
@@ -73,15 +73,15 @@ const login = async (req, res) => {
 
     // Find user
     const { data: user, error } = await supabaseAdmin
-      .from("users")
-      .select("*")
-      .eq("email", email)
+      .from('users')
+      .select('*')
+      .eq('email', email)
       .single();
 
     if ((error!=null) || (user==null)) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password",
+        message: 'Invalid email or password',
       });
     }
 
@@ -91,16 +91,16 @@ const login = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password",
+        message: 'Invalid email or password',
       });
     }
 
     // Deactivate any existing active sessions (single device login)
     await supabaseAdmin
-      .from("user_sessions")
+      .from('user_sessions')
       .update({ is_active: false })
-      .eq("user_id", user.id)
-      .eq("is_active", true);
+      .eq('user_id', user.id)
+      .eq('is_active', true);
 
     // Generate JWT token
     const token = jwt.sign(
@@ -113,20 +113,20 @@ const login = async (req, res) => {
     const deviceFingerprint = generateDeviceFingerprint(req);
     const sessionExpiry = new Date(Date.now() + SESSION_TIMEOUT);
 
-    await supabaseAdmin.from("user_sessions").insert([
+    await supabaseAdmin.from('user_sessions').insert([
       {
         user_id: user.id,
         device_fingerprint: deviceFingerprint,
         session_token: token,
         ip_address: req.ip,
-        user_agent: req.headers["user-agent"],
+        user_agent: req.headers['user-agent'],
         expires_at: sessionExpiry,
       },
     ]);
 
     res.status(200).json({
       success: true,
-      message: "Login successful",
+      message: 'Login successful',
       data: {
         token,
         user: {
@@ -138,10 +138,10 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      message: "Login failed",
+      message: 'Login failed',
       error: error.message,
     });
   }
@@ -150,23 +150,23 @@ const login = async (req, res) => {
 // Logout user
 const logout = async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
+    const token = req.headers.authorization?.split(' ')[1];
 
     // Deactivate session
     await supabaseAdmin
-      .from("user_sessions")
+      .from('user_sessions')
       .update({ is_active: false })
-      .eq("session_token", token);
+      .eq('session_token', token);
 
     res.status(200).json({
       success: true,
-      message: "Logout successful",
+      message: 'Logout successful',
     });
   } catch (error) {
-    console.error("Logout error:", error);
+    console.error('Logout error:', error);
     res.status(500).json({
       success: false,
-      message: "Logout failed",
+      message: 'Logout failed',
       error: error.message,
     });
   }
@@ -176,9 +176,9 @@ const logout = async (req, res) => {
 const getProfile = async (req, res) => {
   try {
     const { data: user, error } = await supabaseAdmin
-      .from("users")
-      .select("id, name, email, role, created_at")
-      .eq("id", req.user.userId)
+      .from('users')
+      .select('id, name, email, role, created_at')
+      .eq('id', req.user.userId)
       .single();
 
     if (error!=null) throw error;
@@ -188,10 +188,10 @@ const getProfile = async (req, res) => {
       data: user,
     });
   } catch (error) {
-    console.error("Get profile error:", error);
+    console.error('Get profile error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to get profile",
+      message: 'Failed to get profile',
       error: error.message,
     });
   }

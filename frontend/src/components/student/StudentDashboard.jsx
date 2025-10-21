@@ -1,8 +1,8 @@
 // Napa
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext.jsx";
-import api from "../../services/api";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext.jsx';
+import api from '../../services/api';
 
 export default function StudentDashboard() {
   const [exams, setExams] = useState([]);
@@ -14,13 +14,13 @@ export default function StudentDashboard() {
   const fetchData = async () => {
     try {
       const [examsRes, resultsRes] = await Promise.all([
-        api.get("/student/exams"),
-        api.get("/student/results"),
+        api.get('/student/exams'),
+        api.get('/student/results'),
       ]);
       setExams(examsRes.data.data);
       setResults(resultsRes.data.data);
     } catch (error) {
-      console.error("Fetch data error:", error);
+      console.error('Fetch data error:', error);
     } finally {
       setLoading(false);
     }
@@ -36,30 +36,30 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="dashboard">
-      <nav className="navbar">
+    <div className='dashboard'>
+      <nav className='navbar'>
         <h2>Student Dashboard</h2>
         <div>
           <span>Welcome, {user.name}</span>
-          <button onClick={logout} className="btn-secondary">
+          <button onClick={logout} className='btn-secondary'>
             Logout
           </button>
         </div>
       </nav>
 
-      <div className="content">
+      <div className='content'>
         <h1>Available Exams</h1>
 
         {loading ? (
-          <div className="loading">Loading...</div>
+          <div className='loading'>Loading...</div>
         ) : exams.length === 0 ? (
-          <div className="empty-state">
+          <div className='empty-state'>
             <p>No exams available at the moment.</p>
           </div>
         ) : (
-          <div className="exam-grid">
+          <div className='exam-grid'>
             {exams.map((exam) => (
-              <div key={exam.id} className="exam-card">
+              <div key={exam.id} className='exam-card'>
                 <h3>{exam.title}</h3>
                 <p>
                   <strong>Topic:</strong> {exam.topic}
@@ -74,15 +74,15 @@ export default function StudentDashboard() {
                   <strong>Duration:</strong> {exam.duration} minutes
                 </p>
 
-                <div className="card-actions">
+                <div className='card-actions'>
                   {hasAttempted(exam.id) ? (
-                    <button className="btn-secondary" disabled>
+                    <button className='btn-secondary' disabled>
                       ✓ Completed
                     </button>
                   ) : (
                     <button
                       onClick={() => navigate(`/student/exam/${exam.id}`)}
-                      className="btn-primary"
+                      className='btn-primary'
                     >
                       Start Exam
                     </button>
@@ -93,11 +93,11 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        <h2 style={{ marginTop: "40px" }}>My Results</h2>
+        <h2 style={{ marginTop: '40px' }}>My Results</h2>
         {results.length === 0 ? (
           <p>No results yet. Take an exam to see your scores!</p>
         ) : (
-          <div className="results-table">
+          <div className='results-table'>
             <table>
               <thead>
                 <tr>
@@ -115,7 +115,7 @@ export default function StudentDashboard() {
                     <td>
                       {result.score}/{result.total_questions}
                     </td>
-                    <td className={result.percentage >= 60 ? "pass" : "fail"}>
+                    <td className={result.percentage >= 60 ? 'pass' : 'fail'}>
                       {result.percentage}%
                     </td>
                     <td>
@@ -128,8 +128,8 @@ export default function StudentDashboard() {
                             `/student/attempts/${result.attempt_id}/review`
                           )
                         }
-                        className="btn-secondary"
-                        style={{ padding: "5px 10px", fontSize: "14px" }}
+                        className='btn-secondary'
+                        style={{ padding: '5px 10px', fontSize: '14px' }}
                       >
                         View Review
                       </button>
