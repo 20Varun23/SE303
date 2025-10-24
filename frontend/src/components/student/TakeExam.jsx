@@ -1,7 +1,28 @@
 // Varun
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // Import useCallback
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+
+/**
+ * Helper function to shuffle an array in place (Fisher-Yates shuffle)
+ * @param {Array} array The array to shuffle
+ * @returns {Array} The shuffled array
+ */
+const shuffleArray = (array) => {
+  let currentIndex = array.length,
+    randomIndex;
+
+  while (currentIndex !== 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex],
+      array[currentIndex],
+    ];
+  }
+  return array;
+};
 
 export default function TakeExam() {
   const { examId } = useParams();
@@ -11,16 +32,55 @@ export default function TakeExam() {
   const [attemptId, setAttemptId] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [shuffledOptions, setShuffledOptions] = useState({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
+
+  const handleSubmit = useCallback(
+    async (auto = false) => {
+      if (!auto && !window.confirm('Are you sure you want to submit the exam?')) {
+        return;
+      }
+
+      try {
+        const response = await api.post(
+          `/student/attempts/${attemptId}/submit`
+        );
+        // const result = response.data.data; // This line wasn't used
+        setSubmitting(true);
+
+        // Redirect to review page instead of dashboard
+        navigate(`/student/attempts/${attemptId}/review`);
+      } catch (error) {
+        alert('Failed to submit exam');
+        setSubmitting(false);
+      }
+    },
+    [attemptId, navigate]
+  );
 
   const startExam = async () => {
     try {
       const response = await api.post(`/student/exams/${examId}/start`);
       const data = response.data.data;
+      const fetchedQuestions = data.questions;
+
+    
+      const optionsMap = {};
+      fetchedQuestions.forEach((q) => {
+        const options = [
+          { text: q.option_a, value: 1 },
+          { text: q.option_b, value: 2 },
+          { text: q.option_c, value: 3 },
+          { text: q.option_d, value: 4 },
+        ];
+        optionsMap[q.id] = shuffleArray(options);
+      });
+      setShuffledOptions(optionsMap);
+
       setExam(data.exam);
-      setQuestions(data.questions);
+      setQuestions(fetchedQuestions);
       setAttemptId(data.attemptId);
       setTimeLeft(data.exam.duration * 60);
     } catch (error) {
@@ -36,11 +96,12 @@ export default function TakeExam() {
   }, []);
 
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    if (timeLeft <= 0 || loading) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
+          clearInterval(timer);
           handleSubmit(true);
           return 0;
         }
@@ -49,39 +110,22 @@ export default function TakeExam() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [timeLeft, loading, handleSubmit]);
 
-
-
-  const handleAnswer = async (questionId, option) => {
-    setAnswers({ ...answers, [questionId]: option });
+  const handleAnswer = async (questionId, optionValue) => {
+    setAnswers((prevAnswers) => ({
+      ...prevAnswers,
+      [questionId]: optionValue,
+    }));
 
     try {
       await api.post('/student/answers', {
         attemptId,
         questionId,
-        selectedOption: option,
+        selectedOption: optionValue,
       });
     } catch (error) {
       console.error('Save answer error:', error);
-    }
-  };
-
-  const handleSubmit = async (auto = false) => {
-    if (!auto && !window.confirm('Are you sure you want to submit the exam?')) {
-      return;
-    }
-
-    try {
-      const response = await api.post(`/student/attempts/${attemptId}/submit`);
-      const result = response.data.data;
-      setSubmitting(true);
-
-      // Redirect to review page instead of dashboard
-      navigate(`/student/attempts/${attemptId}/review`);
-    } catch (error) {
-      alert('Failed to submit exam');
-      setSubmitting(false);
     }
   };
 
@@ -96,6 +140,7 @@ export default function TakeExam() {
   }
 
   const question = questions[currentQuestion];
+  const currentShuffledOptions = question ? shuffledOptions[question.id] : [];
 
   return (
     <div className='exam-container'>
@@ -109,23 +154,31 @@ export default function TakeExam() {
         <div className='timer'>Time Left: {formatTime(timeLeft)}</div>
       </div>
 
-      <div className='question-container'>
-        <h3>{question.question_text}</h3>
+      {question ? (
+        <div className='question-container'>
+          <h3>{question.question_text}</h3>
 
-        <div className='options'>
-          {['a', 'b', 'c', 'd'].map((opt, idx) => (
-            <div
-              key={opt}
-              className={`option ${answers[question.id] === idx + 1 ? 'selected' : ''
-                }`}
-              onClick={() => handleAnswer(question.id, idx + 1)}
-            >
-              <span className='option-label'>{opt.toUpperCase()}</span>
-              <span>{question[`option_${opt}`]}</span>
-            </div>
-          ))}
+          <div className='options'>
+            {currentShuffledOptions &&
+              currentShuffledOptions.map((option, idx) => (
+                <div
+                  key={option.value}
+                  className={`option ${
+                    answers[question.id] === option.value ? 'selected' : ''
+                  }`}
+                  onClick={() => handleAnswer(question.id, option.value)}
+                >
+                  <span className='option-label'>
+                    {String.fromCharCode(65 + idx)}
+                  </span>
+                  <span>{option.text}</span>
+                </div>
+              ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className='loading'>Loading question...</div>
+      )}
 
       <div className='exam-navigation'>
         <button
@@ -145,7 +198,7 @@ export default function TakeExam() {
           </button>
         ) : (
           <button
-            onClick={handleSubmit}
+            onClick={() => handleSubmit(false)} 
             disabled={submitting}
             className='btn-primary'
           >
