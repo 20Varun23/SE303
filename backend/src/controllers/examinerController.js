@@ -161,6 +161,137 @@ const getExamPreview = async (req, res) => {
 };
 // Varun end
 
+// Update exam title
+const updateExamTitle = async (req, res) => {
+  try {
+    const { examId } = req.params;
+    const { title } = req.body;
+    const examinerId = req.user.userId;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Title is required'
+      });
+    }
+
+    // Update the exam title
+    const { data: exam, error } = await supabaseAdmin
+      .from('exams')
+      .update({ title: title.trim() })
+      .eq('id', examId)
+      .eq('examiner_id', examinerId)
+      .select()
+      .single();
+
+    if (error || !exam) {
+      return res.status(404).json({
+        success: false,
+        message: 'Exam not found or unauthorized'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Exam title updated successfully',
+      data: exam
+    });
+  } catch (error) {
+    console.error('Update exam title error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update exam title',
+      error: error.message
+    });
+  }
+};
+
+// Delete entire exam
+const deleteExam = async (req, res) => {
+  try {
+    const { examId } = req.params;
+    const examinerId = req.user.userId;
+
+    // Verify ownership
+    const { data: exam, error: examError } = await supabaseAdmin
+      .from('exams')
+      .select('id, is_published')
+      .eq('id', examId)
+      .eq('examiner_id', examinerId)
+      .single();
+
+    if (examError || !exam) {
+      return res.status(404).json({
+        success: false,
+        message: 'Exam not found or unauthorized'
+      });
+    }
+
+    // Optional: Prevent deleting published exams
+    // Uncomment if you want this restriction
+    // if (exam.is_published) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: 'Cannot delete published exams'
+    //   });
+    // }
+
+    // Delete all questions first (due to foreign key constraint)
+    const { error: questionsError } = await supabaseAdmin
+      .from('questions')
+      .delete()
+      .eq('exam_id', examId);
+
+    if (questionsError) {
+      console.error('Error deleting questions:', questionsError);
+      throw new Error('Failed to delete exam questions');
+    }
+
+    // Delete all results
+    const { error: resultsError } = await supabaseAdmin
+      .from('results')
+      .delete()
+      .eq('exam_id', examId);
+
+    if (resultsError) {
+      console.error('Error deleting results:', resultsError);
+      // Continue anyway - results might not exist
+    }
+
+    // Delete all attempts
+    const { error: attemptsError } = await supabaseAdmin
+      .from('attempts')
+      .delete()
+      .eq('exam_id', examId);
+
+    if (attemptsError) {
+      console.error('Error deleting attempts:', attemptsError);
+      // Continue anyway - attempts might not exist
+    }
+
+    // Finally, delete the exam
+    const { error: deleteError } = await supabaseAdmin
+      .from('exams')
+      .delete()
+      .eq('id', examId)
+      .eq('examiner_id', examinerId);
+
+    if (deleteError) throw deleteError;
+
+    res.status(200).json({
+      success: true,
+      message: 'Exam deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete exam error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete exam',
+      error: error.message
+    });
+  }
+};
+
 // Napa start
 // Get all exams created by examiner
 const getMyExams = async (req, res) => {
@@ -303,4 +434,6 @@ export {
   getMyExams,
   getExamAnalytics,
   getExamLeaderboard,
+  updateExamTitle,
+  deleteExam
 };

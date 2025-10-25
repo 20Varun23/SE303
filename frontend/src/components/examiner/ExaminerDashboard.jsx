@@ -15,7 +15,6 @@ export default function ExaminerDashboard() {
       const response = await api.get("/examiner/exams");
       const examsData = response.data.data;
       setExams(examsData);
-
       // Fetch statistics for each published exam
       const statsPromises = examsData
         .filter((exam) => exam.is_published)
@@ -32,7 +31,6 @@ export default function ExaminerDashboard() {
   useEffect(() => {
     fetchExams();
   }, []);
-
 
   const fetchExamStats = async (examId) => {
     try {
@@ -59,6 +57,23 @@ export default function ExaminerDashboard() {
       fetchExams();
     } catch (error) {
       alert("Failed to publish exam");
+    }
+  };
+
+  const handleDeleteExam = async (examId, examTitle) => {
+    const confirmMessage = `Are you sure you want to DELETE the exam "${examTitle}"?\n\nThis will permanently delete:\n• All questions\n• All student attempts\n• All results\n\nThis action CANNOT be undone!`;
+
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      await api.delete(`/examiner/exams/${examId}`);
+      alert("Exam deleted successfully!");
+      setExams(exams.filter((exam) => exam.id !== examId));
+    } catch (error) {
+      console.error("Delete exam error:", error);
+      alert(error.response?.data?.message || "Failed to delete exam");
     }
   };
 
@@ -94,7 +109,39 @@ export default function ExaminerDashboard() {
         ) : (
           <div className="exam-grid">
             {exams.map((exam) => (
-              <div key={exam.id} className="exam-card">
+              <div
+                key={exam.id}
+                className="exam-card"
+                style={{ position: "relative", paddingTop: "15px" }}
+              >
+                {/* DELETE BUTTON - TOP RIGHT WITH INLINE STYLES */}
+                <button
+                  onClick={() => handleDeleteExam(exam.id, exam.title)}
+                  title="Delete exam"
+                  style={{
+                    position: "absolute",
+                    top: "10px",
+                    right: "10px",
+                    background: "#e74c3c",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                    width: "36px",
+                    height: "36px",
+                    cursor: "pointer",
+                    fontSize: "18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 10,
+                    padding: 0,
+                  }}
+                  onMouseEnter={(e) => (e.target.style.background = "#c0392b")}
+                  onMouseLeave={(e) => (e.target.style.background = "#e74c3c")}
+                >
+                  🗑️
+                </button>
+
                 <h3>{exam.title}</h3>
                 <p>
                   <strong>Topic:</strong> {exam.topic}
@@ -112,7 +159,6 @@ export default function ExaminerDashboard() {
                   <strong>Status:</strong>{" "}
                   {exam.is_published ? "✅ Published" : "⏳ Draft"}
                 </p>
-
                 {/* Statistics Section */}
                 {exam.is_published && examStats[exam.id] && (
                   <div className="exam-stats">
@@ -144,20 +190,40 @@ export default function ExaminerDashboard() {
 
                 <div className="card-actions">
                   {!exam.is_published && (
-                    <button
-                      onClick={() => handlePublish(exam.id)}
-                      className="btn-primary"
-                    >
-                      Publish
-                    </button>
+                    <>
+                      <button
+                        onClick={() =>
+                          navigate(`/examiner/exams/${exam.id}/edit`)
+                        }
+                        className="btn-secondary"
+                        style={{ marginRight: "10px" }}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() => handlePublish(exam.id)}
+                        className="btn-primary"
+                      >
+                        Publish
+                      </button>
+                    </>
                   )}
                   {exam.is_published && (
                     <>
                       <button
                         onClick={() =>
+                          navigate(`/examiner/exams/${exam.id}/edit`)
+                        }
+                        className="btn-secondary"
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() =>
                           navigate(`/examiner/exam/${exam.id}/leaderboard`)
                         }
                         className="btn-secondary"
+                        style={{ marginLeft: "10px" }}
                       >
                         View Leaderboard
                       </button>

@@ -6,8 +6,14 @@ import {
   publishExam,
   getMyExams,
   getExamAnalytics,
-  getExamLeaderboard
+  getExamLeaderboard,
+  updateExamTitle,
+  deleteExam
 } from "../controllers/examinerController.js";
+
+import {
+  updateQuestion
+} from "../controllers/questionController.js"
 
 import { examCreationValidation, validate } from "../utils/validators.js";
 
@@ -29,10 +35,19 @@ router.get("/exams/:examId/preview", getExamPreview);
 // Publish exam (make available to students)
 router.put("/exams/:examId/publish", publishExam);
 
+// Update exam title
+router.put("/exams/:examId/title", updateExamTitle);
+
+// Delete an exam
+router.delete("/exams/:examId", deleteExam);  
+
 // Get exam analytics and results
 router.get("/exams/:examId/analytics", getExamAnalytics);
 
 // Get leaderboard for exam
 router.get('/exams/:examId/leaderboard', getExamLeaderboard);
+
+// Question editing routes
+router.put('/questions/:questionId', updateQuestion);
 
 export default router;
