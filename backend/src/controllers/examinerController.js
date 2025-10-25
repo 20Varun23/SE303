@@ -1,5 +1,5 @@
-import { supabaseAdmin } from "../config/database.js";
-import generateQuestions from "../services/questionGenerationService.js";
+import { supabaseAdmin } from '../config/database.js';
+import generateQuestions from '../services/questionGenerationService.js';
 
 // Suvarna start
 // Publish exam
@@ -9,33 +9,33 @@ const publishExam = async (req, res) => {
     const examinerId = req.user.userId;
 
     const { data: exam, error } = await supabaseAdmin
-      .from("exams")
+      .from('exams')
       .update({
         is_published: true,
         published_at: new Date(),
       })
-      .eq("id", examId)
-      .eq("examiner_id", examinerId)
+      .eq('id', examId)
+      .eq('examiner_id', examinerId)
       .select()
       .single();
 
     if (error || !exam) {
       return res.status(404).json({
         success: false,
-        message: "Exam not found",
+        message: 'Exam not found',
       });
     }
 
     res.status(200).json({
       success: true,
-      message: "Exam published successfully",
+      message: 'Exam published successfully',
       data: exam,
     });
   } catch (error) {
-    console.error("Publish exam error:", error);
+    console.error('Publish exam error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to publish exam",
+      message: 'Failed to publish exam',
       error: error.message,
     });
   }
@@ -58,7 +58,7 @@ const createExam = async (req, res) => {
 
     // Create exam record
     const { data: exam, error: examError } = await supabaseAdmin
-      .from("exams")
+      .from('exams')
       .insert([
         {
           examiner_id: examinerId,
@@ -88,14 +88,14 @@ const createExam = async (req, res) => {
     }));
 
     const { error: questionsError } = await supabaseAdmin
-      .from("questions")
+      .from('questions')
       .insert(questionsToInsert);
 
     if (questionsError) throw questionsError;
 
     res.status(201).json({
       success: true,
-      message: "Exam created successfully",
+      message: 'Exam created successfully',
       data: {
         examId: exam.id,
         title: exam.title,
@@ -104,10 +104,10 @@ const createExam = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Create exam error:", error);
+    console.error('Create exam error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to create exam",
+      message: 'Failed to create exam',
       error: error.message,
     });
   }
@@ -121,25 +121,25 @@ const getExamPreview = async (req, res) => {
 
     // Get exam details
     const { data: exam, error: examError } = await supabaseAdmin
-      .from("exams")
-      .select("*")
-      .eq("id", examId)
-      .eq("examiner_id", examinerId)
+      .from('exams')
+      .select('*')
+      .eq('id', examId)
+      .eq('examiner_id', examinerId)
       .single();
 
     if ((examError!=null) || (exam==null)) {
       return res.status(404).json({
         success: false,
-        message: "Exam not found",
+        message: 'Exam not found',
       });
     }
 
     // Get questions
     const { data: questions, error: questionsError } = await supabaseAdmin
-      .from("questions")
-      .select("*")
-      .eq("exam_id", examId)
-      .order("question_order", { ascending: true });
+      .from('questions')
+      .select('*')
+      .eq('exam_id', examId)
+      .order('question_order', { ascending: true });
 
     if (questionsError!=null) throw questionsError;
 
@@ -151,10 +151,10 @@ const getExamPreview = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get exam preview error:", error);
+    console.error('Get exam preview error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to get exam",
+      message: 'Failed to get exam',
       error: error.message,
     });
   }
@@ -299,10 +299,10 @@ const getMyExams = async (req, res) => {
     const examinerId = req.user.userId;
 
     const { data: exams, error } = await supabaseAdmin
-      .from("exams")
-      .select("*")
-      .eq("examiner_id", examinerId)
-      .order("created_at", { ascending: false });
+      .from('exams')
+      .select('*')
+      .eq('examiner_id', examinerId)
+      .order('created_at', { ascending: false });
 
     if (error!=null) throw error;
 
@@ -311,10 +311,10 @@ const getMyExams = async (req, res) => {
       data: exams,
     });
   } catch (error) {
-    console.error("Get my exams error:", error);
+    console.error('Get my exams error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to get exams",
+      message: 'Failed to get exams',
       error: error.message,
     });
   }
@@ -328,30 +328,30 @@ const getExamAnalytics = async (req, res) => {
 
     // Verify exam belongs to examiner
     const { data: exam, error: examError } = await supabaseAdmin
-      .from("exams")
-      .select("*")
-      .eq("id", examId)
-      .eq("examiner_id", examinerId)
+      .from('exams')
+      .select('*')
+      .eq('id', examId)
+      .eq('examiner_id', examinerId)
       .single();
 
     if ((examError!=null) || (exam==null)) {
       return res.status(404).json({
         success: false,
-        message: "Exam not found",
+        message: 'Exam not found',
       });
     }
 
     // Get all results for this exam with student info
     const { data: results, error: resultsError } = await supabaseAdmin
-      .from("results")
+      .from('results')
       .select(
         `
         *,
         users:student_id (name, email)
       `
       )
-      .eq("exam_id", examId)
-      .order("evaluated_at", { ascending: false });
+      .eq('exam_id', examId)
+      .order('evaluated_at', { ascending: false });
 
     if (resultsError!=null) throw resultsError;
 
@@ -380,10 +380,10 @@ const getExamAnalytics = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get exam analytics error:", error);
+    console.error('Get exam analytics error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to get analytics",
+      message: 'Failed to get analytics',
       error: error.message,
     });
   }

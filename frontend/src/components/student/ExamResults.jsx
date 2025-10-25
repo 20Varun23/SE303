@@ -1,7 +1,7 @@
 // Napa
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import api from "../../services/api";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 
 export default function ExamResults() {
   const [results, setResults] = useState([]);
@@ -10,10 +10,10 @@ export default function ExamResults() {
 
   const fetchResults = async () => {
     try {
-      const response = await api.get("/student/results");
+      const response = await api.get('/student/results');
       setResults(response.data.data);
     } catch (error) {
-      console.error("Fetch results error:", error);
+      console.error('Fetch results error:', error);
     } finally {
       setLoading(false);
     }
@@ -25,28 +25,28 @@ export default function ExamResults() {
 
 
   return (
-    <div className="dashboard">
-      <nav className="navbar">
+    <div className='dashboard'>
+      <nav className='navbar'>
         <h2>My Results</h2>
         <button
-          onClick={() => navigate("/student/dashboard")}
-          className="btn-secondary"
+          onClick={() => navigate('/student/dashboard')}
+          className='btn-secondary'
         >
           Back to Dashboard
         </button>
       </nav>
 
-      <div className="content">
+      <div className='content'>
         <h1>Exam Results</h1>
 
         {loading ? (
-          <div className="loading">Loading...</div>
+          <div className='loading'>Loading...</div>
         ) : results.length === 0 ? (
-          <div className="empty-state">
+          <div className='empty-state'>
             <p>No results yet. Take an exam to see your scores!</p>
           </div>
         ) : (
-          <div className="results-table">
+          <div className='results-table'>
             <table>
               <thead>
                 <tr>
@@ -66,7 +66,7 @@ export default function ExamResults() {
                     <td>
                       {result.score}/{result.total_questions}
                     </td>
-                    <td className={result.percentage >= 60 ? "pass" : "fail"}>
+                    <td className={result.percentage >= 60 ? 'pass' : 'fail'}>
                       {result.percentage}%
                     </td>
                     <td>{result.time_taken} min</td>

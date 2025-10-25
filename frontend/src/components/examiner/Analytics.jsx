@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import api from "../../services/api";
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 
 export default function Analytics() {
   const { examId } = useParams();
@@ -13,9 +13,9 @@ export default function Analytics() {
       const response = await api.get(`/examiner/exams/${examId}/analytics`);
       setAnalytics(response.data.data);
     } catch (error) {
-      console.error("Fetch analytics error:", error);
-      alert("Failed to load analytics");
-      navigate("/examiner/dashboard");
+      console.error('Fetch analytics error:', error);
+      alert('Failed to load analytics');
+      navigate('/examiner/dashboard');
     } finally {
       setLoading(false);
     }
@@ -33,7 +33,7 @@ export default function Analytics() {
   };
 
   if (loading) {
-    return <div className="loading">Loading analytics...</div>;
+    return <div className='loading'>Loading analytics...</div>;
   }
 
   if (analytics==null) return null;
@@ -42,22 +42,22 @@ export default function Analytics() {
   const hasResults = results.length > 0;
 
   return (
-    <div className="dashboard">
-      <nav className="navbar">
+    <div className='dashboard'>
+      <nav className='navbar'>
         <h2>Exam Analytics</h2>
         <button
-          onClick={() => navigate("/examiner/dashboard")}
-          className="btn-secondary"
+          onClick={() => navigate('/examiner/dashboard')}
+          className='btn-secondary'
         >
           Back to Dashboard
         </button>
       </nav>
 
-      <div className="content">
+      <div className='content'>
         {/* Exam Info Card */}
-        <div className="analytics-header">
+        <div className='analytics-header'>
           <h1>{exam.title}</h1>
-          <div className="exam-details">
+          <div className='exam-details'>
             <span>
               <strong>Topic:</strong> {exam.topic}
             </span>
@@ -74,60 +74,60 @@ export default function Analytics() {
         </div>
 
         {/* Statistics Cards */}
-        <div className="analytics-stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon">👥</div>
-            <div className="stat-info">
+        <div className='analytics-stats-grid'>
+          <div className='stat-card'>
+            <div className='stat-icon'>👥</div>
+            <div className='stat-info'>
               <h3>Total Attempts</h3>
-              <p className="stat-number">{statistics.totalAttempts}</p>
+              <p className='stat-number'>{statistics.totalAttempts}</p>
             </div>
           </div>
 
-          <div className="stat-card">
-            <div className="stat-icon">📈</div>
-            <div className="stat-info">
+          <div className='stat-card'>
+            <div className='stat-icon'>📈</div>
+            <div className='stat-info'>
               <h3>Average Score</h3>
-              <p className="stat-number">
+              <p className='stat-number'>
                 {hasResults
                   ? `${statistics.averageScore}/${exam.total_questions}`
-                  : "N/A"}
+                  : 'N/A'}
               </p>
             </div>
           </div>
 
-          <div className="stat-card">
-            <div className="stat-info">
+          <div className='stat-card'>
+            <div className='stat-info'>
               <h3>Average Percentage</h3>
-              <p className="stat-number">
-                {hasResults ? `${statistics.averagePercentage}%` : "N/A"}
+              <p className='stat-number'>
+                {hasResults ? `${statistics.averagePercentage}%` : 'N/A'}
               </p>
             </div>
           </div>
 
-          <div className="stat-card">
-            <div className="stat-info">
+          <div className='stat-card'>
+            <div className='stat-info'>
               <h3>Pass Rate</h3>
-              <p className="stat-number">
+              <p className='stat-number'>
                 {hasResults
                   ? `${results.filter((r) => parseFloat(r.percentage) >= 60)
                     .length
                   }/${results.length}`
-                  : "N/A"}
+                  : 'N/A'}
               </p>
             </div>
           </div>
         </div>
 
         {/* Results Table */}
-        <div className="analytics-results">
+        <div className='analytics-results'>
           <h2>Student Performance</h2>
 
           {!hasResults ? (
-            <div className="empty-state">
+            <div className='empty-state'>
               <p>No students have attempted this exam yet.</p>
             </div>
           ) : (
-            <div className="results-table">
+            <div className='results-table'>
               <table>
                 <thead>
                   <tr>
@@ -152,7 +152,7 @@ export default function Analytics() {
                       </td>
                       <td
                         className={
-                          parseFloat(result.percentage) >= 60 ? "pass" : "fail"
+                          parseFloat(result.percentage) >= 60 ? 'pass' : 'fail'
                         }
                       >
                         {result.percentage}%
@@ -161,13 +161,13 @@ export default function Analytics() {
                       <td>
                         <span
                           className={`status-badge ${parseFloat(result.percentage) >= 60
-                              ? "pass-badge"
-                              : "fail-badge"
+                              ? 'pass-badge'
+                              : 'fail-badge'
                             }`}
                         >
                           {parseFloat(result.percentage) >= 60
-                            ? "Pass"
-                            : "Fail"}
+                            ? 'Pass'
+                            : 'Fail'}
                         </span>
                       </td>
                       <td>{new Date(result.evaluated_at).toLocaleString()}</td>
@@ -181,15 +181,15 @@ export default function Analytics() {
 
         {/* Score Distribution Chart (Visual representation) */}
         {hasResults && (
-          <div className="score-distribution">
+          <div className='score-distribution'>
             <h2>Score Distribution</h2>
-            <div className="distribution-bars">
+            <div className='distribution-bars'>
               {[
-                { range: "0-20%", min: 0, max: 20, color: "#e74c3c" },
-                { range: "21-40%", min: 21, max: 40, color: "#e67e22" },
-                { range: "41-60%", min: 41, max: 60, color: "#f39c12" },
-                { range: "61-80%", min: 61, max: 80, color: "#3498db" },
-                { range: "81-100%", min: 81, max: 100, color: "#27ae60" },
+                { range: '0-20%', min: 0, max: 20, color: '#e74c3c' },
+                { range: '21-40%', min: 21, max: 40, color: '#e67e22' },
+                { range: '41-60%', min: 41, max: 60, color: '#f39c12' },
+                { range: '61-80%', min: 61, max: 80, color: '#3498db' },
+                { range: '81-100%', min: 81, max: 100, color: '#27ae60' },
               ].map((bucket) => {
                 const count = results.filter((r) => {
                   const pct = parseFloat(r.percentage);
@@ -198,17 +198,17 @@ export default function Analytics() {
                 const percentage = (count / results.length) * 100;
 
                 return (
-                  <div key={bucket.range} className="distribution-item">
-                    <div className="distribution-label">{bucket.range}</div>
-                    <div className="distribution-bar-container">
+                  <div key={bucket.range} className='distribution-item'>
+                    <div className='distribution-label'>{bucket.range}</div>
+                    <div className='distribution-bar-container'>
                       <div
-                        className="distribution-bar"
+                        className='distribution-bar'
                         style={{
                           width: `${percentage}%`,
                           backgroundColor: bucket.color,
                         }}
                       >
-                        <span className="bar-count">{count}</span>
+                        <span className='bar-count'>{count}</span>
                       </div>
                     </div>
                   </div>

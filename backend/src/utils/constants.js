@@ -1,12 +1,12 @@
 const USER_ROLES =  {
-  STUDENT: "student",
-  EXAMINER: "examiner",
+  STUDENT: 'student',
+  EXAMINER: 'examiner',
 };
 
 const DIFFICULTY_LEVELS =  {
-  EASY: "easy",
-  MEDIUM: "medium",
-  HARD: "hard",
+  EASY: 'easy',
+  MEDIUM: 'medium',
+  HARD: 'hard',
 };
 
 const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
@@ -15,9 +15,9 @@ const EMAIL_VERIFICATION_TIMEOUT =  24 * 60 * 60 * 1000; // 24 hours
 const PASSWORD_MIN_LENGTH = 8;
 
 const EXAM_STATUSES = {
-    DRAFT: "draft",
-    PUBLISHED: "published",
-    COMPLETED: "completed",
+    DRAFT: 'draft',
+    PUBLISHED: 'published',
+    COMPLETED: 'completed',
 };
 
 

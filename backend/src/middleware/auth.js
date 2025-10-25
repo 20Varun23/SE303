@@ -1,15 +1,15 @@
 // Suvarna
-import jwt from "jsonwebtoken";
-import { USER_ROLES } from "../utils/constants.js";
+import jwt from 'jsonwebtoken';
+import { USER_ROLES } from '../utils/constants.js';
 
 const authenticate = async (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
+    const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "No token provided",
+        message: 'No token provided',
       });
     }
 
@@ -25,7 +25,7 @@ const authenticate = async (req, res, next) => {
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: "Invalid token",
+      message: 'Invalid token',
     });
   }
 };
@@ -34,7 +34,7 @@ const isExaminer = (req, res, next) => {
   if (req.user.role !== USER_ROLES.EXAMINER) {
     return res.status(403).json({
       success: false,
-      message: "Access denied. Examiner role required.",
+      message: 'Access denied. Examiner role required.',
     });
   }
   next();
@@ -44,7 +44,7 @@ const isStudent = (req, res, next) => {
   if (req.user.role !== USER_ROLES.STUDENT) {
     return res.status(403).json({
       success: false,
-      message: "Access denied. Student role required.",
+      message: 'Access denied. Student role required.',
     });
   }
   next();

@@ -1,6 +1,6 @@
 // Suvarna
-import { supabaseAdmin } from "../config/database.js";
-import { generateDeviceFingerprint } from "../utils/helpers.js";
+import { supabaseAdmin } from '../config/database.js';
+import { generateDeviceFingerprint } from '../utils/helpers.js';
 
 // Check if user is already logged in from another device
 const checkDeviceSession = async (req, res, next) => {
@@ -10,13 +10,13 @@ const checkDeviceSession = async (req, res, next) => {
 
     // Get active session
     const { data: activeSession, error } = await supabaseAdmin
-      .from("user_sessions")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("is_active", true)
+      .from('user_sessions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_active', true)
       .single();
 
-    if ((error!=null) && (error.code !== "PGRST116")) {
+    if ((error!=null) && (error.code !== 'PGRST116')) {
       // PGRST116 = no rows returned
       throw error;
     }
@@ -29,16 +29,16 @@ const checkDeviceSession = async (req, res, next) => {
       return res.status(403).json({
         success: false,
         message:
-          "You are already logged in from another device. Please logout from that device first.",
+          'You are already logged in from another device. Please logout from that device first.',
       });
     }
 
     next();
   } catch (error) {
-    console.error("Device validation error:", error);
+    console.error('Device validation error:', error);
     return res.status(500).json({
       success: false,
-      message: "Device validation failed",
+      message: 'Device validation failed',
     });
   }
 };

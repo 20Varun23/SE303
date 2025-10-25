@@ -1,4 +1,4 @@
-import express from "express";
+import express from 'express';
 
 import {
   createExam,
@@ -6,43 +6,31 @@ import {
   publishExam,
   getMyExams,
   getExamAnalytics,
-  getExamLeaderboard,
-  updateExamTitle,
-  deleteExam
+  getExamLeaderboard
 } from "../controllers/examinerController.js";
 
-import {
-  updateQuestion
-} from "../controllers/questionController.js"
+import { examCreationValidation, validate } from '../utils/validators.js';
 
-import { examCreationValidation, validate } from "../utils/validators.js";
-
-import { authenticate, isExaminer } from "../middleware/auth.js";
+import { authenticate, isExaminer } from '../middleware/auth.js';
 
 const router = express.Router();
 // All routes require authentication and examiner role
 router.use(authenticate, isExaminer);
 
 // Create exam with AI-generated questions
-router.post("/exams", examCreationValidation, validate, createExam);
+router.post('/exams', examCreationValidation, validate, createExam);
 
 // Get all exams created by this examiner
-router.get("/exams", getMyExams);
+router.get('/exams', getMyExams);
 
 // Get exam preview with questions
-router.get("/exams/:examId/preview", getExamPreview);
+router.get('/exams/:examId/preview', getExamPreview);
 
 // Publish exam (make available to students)
 router.put("/exams/:examId/publish", publishExam);
 
-// Update exam title
-router.put("/exams/:examId/title", updateExamTitle);
-
-// Delete an exam
-router.delete("/exams/:examId", deleteExam);  
-
 // Get exam analytics and results
-router.get("/exams/:examId/analytics", getExamAnalytics);
+router.get('/exams/:examId/analytics', getExamAnalytics);
 
 // Get leaderboard for exam
 router.get('/exams/:examId/leaderboard', getExamLeaderboard);

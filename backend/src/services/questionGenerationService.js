@@ -1,10 +1,10 @@
 // Varun 
-import { model } from "../config/gemini.js";
+import { model } from '../config/gemini.js';
 
 // Generate MCQ questions using Gemini API
 const generateQuestions = async (topic, difficulty, numberOfQuestions) => {
   try {
-    const prompt = `Generate exactly ${numberOfQuestions} multiple choice questions about "${topic}" at ${difficulty} difficulty level.
+    const prompt = `Generate exactly ${numberOfQuestions} multiple choice questions about '${topic}' at ${difficulty} difficulty level.
 
 Requirements:
 - Each question must have exactly 4 options (A, B, C, D)
@@ -15,16 +15,16 @@ Requirements:
 
 Return the response in this EXACT JSON format:
 {
-  "questions": [
+  'questions': [
     {
-      "question": "Question text here?",
-      "options": {
-        "A": "First option",
-        "B": "Second option",
-        "C": "Third option",
-        "D": "Fourth option"
+      'question': 'Question text here?',
+      'options': {
+        'A': 'First option',
+        'B': 'Second option',
+        'C': 'Third option',
+        'D': 'Fourth option'
       },
-      "correctAnswer": "A"
+      'correctAnswer': 'A'
     }
   ]
 }`;
@@ -35,12 +35,12 @@ Return the response in this EXACT JSON format:
 
     // Clean up the response - remove markdown code blocks if present
     let cleanedText = text.trim();
-    if (cleanedText.startsWith("```json")) {
+    if (cleanedText.startsWith('```json')) {
       cleanedText = cleanedText
-        .replace(/```json\n?/g, "")
-        .replace(/```\n?/g, "");
-    } else if (cleanedText.startsWith("```")) {
-      cleanedText = cleanedText.replace(/```\n?/g, "");
+        .replace(/```json\n?/g, '')
+        .replace(/```\n?/g, '');
+    } else if (cleanedText.startsWith('```')) {
+      cleanedText = cleanedText.replace(/```\n?/g, '');
     }
 
     // Parse JSON
@@ -48,7 +48,7 @@ Return the response in this EXACT JSON format:
 
     // Validate response structure
     if (!parsedResponse.questions || !Array.isArray(parsedResponse.questions)) {
-      throw new Error("Invalid response format from AI");
+      throw new Error('Invalid response format from AI');
     }
 
     // Validate each question
@@ -77,7 +77,7 @@ Return the response in this EXACT JSON format:
 
     return validatedQuestions;
   } catch (error) {
-    console.error("Question generation error:", error);
+    console.error('Question generation error:', error);
     throw new Error(`Failed to generate questions: ${error.message}`);
   }
 };
