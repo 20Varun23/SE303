@@ -12,6 +12,7 @@ import Leaderboard from "./components/examiner/Leaderboard";
 import ExamReview from "./components/student/ExamReview";
 import Analytics from "./components/examiner/Analytics";
 import LandingPage from "./components/LandingPage";
+import EditQuestions from "./components/examiner/EditQuestions"
 import "./styles/index.css";
 
 const ProtectedRoute = ({ children, requiredRole }) => {

@@ -9,6 +9,8 @@ import {
   getExamLeaderboard
 } from "../controllers/examinerController.js";
 
+import { updateQuestion } from '../controllers/questionController.js';
+
 import { examCreationValidation, validate } from '../utils/validators.js';
 
 import { authenticate, isExaminer } from '../middleware/auth.js';
