@@ -126,8 +126,8 @@ export default function EditQuestions() {
         <div className="edit-header">
           <h1>{exam.title}</h1>
           <p>
-            <strong>Topic:</strong> {exam.topic} |<strong>Difficulty:</strong>{" "}
-            {exam.difficulty_level} |<strong>Questions:</strong>{" "}
+            <strong>Topic:</strong> {exam.topic} <br /><strong>Difficulty:</strong>{" "}
+            {exam.difficulty_level} <br /><strong>Questions:</strong>{" "}
             {questions.length}
           </p>
           {exam.is_published && (
@@ -168,19 +168,21 @@ export default function EditQuestions() {
                         handleFormChange("question_text", e.target.value)
                       }
                       rows="3"
+                      className="qEditInput"
                     />
                   </div>
-
+                      
                   <div className="options-grid-edit">
                     {["a", "b", "c", "d"].map((opt, idx) => (
                       <div key={opt} className="option-edit">
-                        <label>Option {opt.toUpperCase()}:</label>
+                        <label>Option {opt.toUpperCase()} : </label>
                         <input
                           type="text"
                           value={editForm[`option_${opt}`]}
                           onChange={(e) =>
                             handleFormChange(`option_${opt}`, e.target.value)
                           }
+                          className="optionInput"
                         />
                         <label className="radio-label">
                           <input
@@ -225,11 +227,11 @@ export default function EditQuestions() {
                         }`}
                       >
                         <span className="option-letter-view">
-                          {opt.toUpperCase()}
+                          {opt.toUpperCase()} : 
                         </span>
                         <span>{question[`option_${opt}`]}</span>
                         {question.correct_answer === idx + 1 && (
-                          <span className="correct-badge">✓ Correct</span>
+                          <span className="correct-badge"> Correct</span>
                         )}
                       </div>
                     ))}

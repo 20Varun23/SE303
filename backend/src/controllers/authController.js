@@ -12,7 +12,7 @@ import { SESSION_TIMEOUT } from '../utils/constants.js';
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 587,
-  secure: false, // 'false' uses STARTTLS. This is still secure.
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
