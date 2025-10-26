@@ -2,6 +2,7 @@ import {supabaseAdmin} from '../config/database.js'
 import { shuffleArray, calculatePercentage } from '../utils/helpers.js';
 
 // Get all published exams available to students
+// Varun start
 const getAvailableExams = async (req, res) => {
   try {
     const { data: exams, error } = await supabaseAdmin
@@ -289,8 +290,10 @@ const submitExam = async (req, res) => {
     });
   }
 };
+// Varun End
 
 // Get student's exam results
+// Napa start
 const getMyResults = async (req, res) => {
   try {
     const studentId = req.user.userId;
