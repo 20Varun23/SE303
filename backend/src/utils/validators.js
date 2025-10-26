@@ -1,4 +1,4 @@
-// Napa/Varun
+// Varun
 import { body, validationResult } from 'express-validator';
 
 import {
