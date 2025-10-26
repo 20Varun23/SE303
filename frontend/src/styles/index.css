@@ -73,6 +73,21 @@ body {
   background: #2980b9;
 }
 
+.btn-edit {
+  padding: 10px 12px;
+  background: white;
+  color: black;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-edit:hover {
+  background: #95a5a6;
+}
+
 .btn-primary:disabled {
   background: #95a5a6;
   cursor: not-allowed;
@@ -90,6 +105,38 @@ body {
 
 .btn-secondary:hover {
   background: #7f8c8d;
+}
+
+.btn-cancel {
+  padding: 10px 12px;
+  background: white;
+  color: black;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-cancel:hover {
+  background: rgb(208, 26, 26);
+  color:white
+}
+
+.btn-save {
+  padding: 10px 12px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-right : 1em;
+}
+
+.btn-save:hover {
+  background: #2980b9;
 }
 
 .auth-link {
@@ -422,6 +469,18 @@ th {
   color: #2c3e50;
 }
 
+.qEditInput {
+  padding: 1em;
+  border-radius: 1em;
+  font-family: "aerial";
+}
+
+.optionInput {
+  padding: 0.5em;
+  border-radius: 1em;
+  margin-bottom: 0.3em;
+}
+
 .question-review-card {
   background: white;
   padding: 30px;
@@ -734,4 +793,33 @@ th {
   color: white;
   font-weight: bold;
   font-size: 14px;
+}
+
+.edit-question-card {
+  margin-bottom: 1em;
+  margin-top: 1em;
+  padding: 1em;
+  border-radius: 2em;
+  background-color: #dde0e0;
+}
+
+.option-view{
+  margin-bottom: 1em;
+  margin-top: 1em;
+  padding: 1em;
+  border-radius: 2em;
+  background-color: white;
+}
+
+.correct-badge {
+  color: #28a745;
+  font-weight: 900;
+}
+
+.edit-header {
+  margin-bottom: 1em;
+  margin-top: 1em;
+  padding: 1em;
+  border-radius: 2em;
+  background-color: white;
 }
