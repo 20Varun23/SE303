@@ -1,4 +1,4 @@
-import {supabaseAdmin} from '../config/database.js'
+import { supabaseAdmin } from '../config/database.js'
 import { shuffleArray, calculatePercentage } from '../utils/helpers.js';
 
 // Get all published exams available to students
@@ -79,6 +79,7 @@ const startExam = async (req, res) => {
           student_id: studentId,
           exam_id: examId,
           randomized_question_order: randomizedOrder,
+          start_time: new Date().toISOString(), 
         },
       ])
       .select()
@@ -247,7 +248,7 @@ const submitExam = async (req, res) => {
     const endTimeUTC = currentTime.getTime();
     const diffInMilliseconds = endTimeUTC - startTimeUTC;
     const timeTakenSeconds = Math.max(1, Math.ceil(diffInMilliseconds / 1000));
-      
+
     console.log('Time calculation debug:');
     console.log('Difference (ms):', diffInMilliseconds);
     console.log('Time taken (sec):', timeTakenSeconds);
@@ -269,7 +270,7 @@ const submitExam = async (req, res) => {
       .select()
       .single();
 
-    if (resultError!=null) throw resultError;
+    if (resultError != null) throw resultError;
 
     res.status(200).json({
       success: true,
@@ -290,6 +291,158 @@ const submitExam = async (req, res) => {
     });
   }
 };
+
+const getRemainingTime = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const studentId = req.user.userId;
+
+    // Fetch attempt and related exam info
+    const { data: attempt, error: attemptError } = await supabaseAdmin
+      .from('student_exam_attempts')
+      .select(`
+        *,
+        exams:exam_id (duration)
+      `)
+      .eq('id', attemptId)
+      .eq('student_id', studentId)
+      .single();
+
+    if (attemptError || !attempt) {
+      return res.status(404).json({
+        success: false,
+        message: 'Attempt not found',
+      });
+    }
+
+    // Calculate time difference
+    const startTime = new Date(attempt.start_time).getTime();
+    const now = Date.now();
+    const elapsed = Math.floor((now - startTime) / 1000);
+    const total = attempt.exams.duration * 60;
+    const remaining = Math.max(total - elapsed, 0);
+
+    // If time is over and not submitted → auto-submit
+    if (remaining <= 0 && !attempt.is_submitted) {
+      await supabaseAdmin
+        .from('student_exam_attempts')
+        .update({
+          is_submitted: true,
+          submission_time: new Date().toISOString(),
+        })
+        .eq('id', attemptId);
+    }
+
+    res.status(200).json({
+      success: true,
+      data: { remainingTime: remaining },
+    });
+  } catch (error) {
+    console.error('Get remaining time error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get remaining time',
+      error: error.message,
+    });
+  }
+};
+
+const getActiveAttempt = async (req, res) => {
+  try {
+    const { examId } = req.params;
+    const studentId = req.user.userId;
+
+    // 1. Find any ongoing attempt
+    const { data: attempt, error: attemptError } = await supabaseAdmin
+      .from('student_exam_attempts')
+      .select(`
+        *,
+        exams:exam_id (duration)
+      `)
+      .eq('exam_id', examId)
+      .eq('student_id', studentId)
+      .eq('is_submitted', false)
+      .order('start_time', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (attemptError || !attempt) {
+      return res.status(200).json({
+        success: true,
+        data: { active: false },
+      });
+    }
+
+    // 2. Check time left
+    const startTime = new Date(attempt.start_time).getTime();
+    const now = Date.now();
+    const elapsed = Math.floor((now - startTime) / 1000);
+    const total = attempt.exams.duration * 60;
+    const remaining = Math.max(total - elapsed, 0);
+
+    // If time expired → auto-submit and mark inactive
+    if (remaining <= 0) {
+      await supabaseAdmin
+        .from('student_exam_attempts')
+        .update({ is_submitted: true, submission_time: new Date().toISOString() })
+        .eq('id', attempt.id);
+
+      return res.status(200).json({
+        success: true,
+        data: { active: false },
+      });
+    }
+
+    // 3. Fetch questions in same order
+    const { data: questions, error: qErr } = await supabaseAdmin
+      .from('questions')
+      .select('id, question_text, option_a, option_b, option_c, option_d')
+      .in('id', attempt.randomized_question_order);
+
+    if (qErr) throw qErr;
+
+    // Maintain the randomized order
+    const orderedQuestions = attempt.randomized_question_order.map(
+      (qid) => questions.find((q) => q.id === qid)
+    );
+
+    // 4. Get previously saved answers
+    const { data: responses } = await supabaseAdmin
+      .from('student_responses')
+      .select('question_id, selected_option')
+      .eq('attempt_id', attempt.id);
+
+    const answers = {};
+    responses?.forEach((r) => {
+      answers[r.question_id] = r.selected_option;
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        active: true,
+        attemptId: attempt.id,
+        exam: {
+          id: attempt.exam_id,
+          title: attempt.exams.title,
+          duration: attempt.exams.duration,
+          totalQuestions: orderedQuestions.length,
+        },
+        questions: orderedQuestions,
+        answers,
+        remainingTime: remaining,
+      },
+    });
+  } catch (error) {
+    console.error('Get active attempt error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch active attempt',
+      error: error.message,
+    });
+  }
+};
+
 // Varun End
 
 // Get student's exam results
@@ -309,7 +462,7 @@ const getMyResults = async (req, res) => {
       .eq('student_id', studentId)
       .order('evaluated_at', { ascending: false });
 
-    if (error!=null) throw error;
+    if (error != null) throw error;
 
     res.status(200).json({
       success: true,
@@ -345,7 +498,7 @@ const getExamResult = async (req, res) => {
       .eq('exam_id', examId)
       .single();
 
-    if ((resultError!=null) || (result==null)) {
+    if ((resultError != null) || (result == null)) {
       return res.status(404).json({
         success: false,
         message: 'Result not found',
@@ -381,7 +534,7 @@ const getExamReview = async (req, res) => {
       .eq('is_submitted', true)
       .single();
 
-    if ((attemptError!=null) || (attempt==null)) {
+    if ((attemptError != null) || (attempt == null)) {
       return res.status(404).json({
         success: false,
         message: 'Exam attempt not found or not submitted',
@@ -395,7 +548,7 @@ const getExamReview = async (req, res) => {
       .eq('exam_id', attempt.exam_id)
       .order('question_order', { ascending: true });
 
-    if (questionsError!=null) throw questionsError;
+    if (questionsError != null) throw questionsError;
 
     // Get student responses
     const { data: responses, error: responsesError } = await supabaseAdmin
@@ -403,7 +556,7 @@ const getExamReview = async (req, res) => {
       .select('*')
       .eq('attempt_id', attemptId);
 
-    if (responsesError!=null) throw responsesError;
+    if (responsesError != null) throw responsesError;
 
     // Get result
     const { data: result, error: resultError } = await supabaseAdmin
@@ -412,7 +565,7 @@ const getExamReview = async (req, res) => {
       .eq('attempt_id', attemptId)
       .single();
 
-    if (resultError!=null) throw resultError;
+    if (resultError != null) throw resultError;
 
     // Combine questions with responses
     const reviewData = questions.map((q) => {
@@ -470,4 +623,6 @@ export {
   getMyResults,
   getExamResult,
   getExamReview,
+  getRemainingTime,
+  getActiveAttempt,
 };
