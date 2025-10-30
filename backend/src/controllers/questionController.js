@@ -1,5 +1,5 @@
 // Varun
-import { supabaseAdmin } from "../config/database.js";
+import { supabaseAdmin } from '../config/database.js';
 
 // Update a single question
 const updateQuestion = async (req, res) => {
@@ -17,28 +17,28 @@ const updateQuestion = async (req, res) => {
 
     // Verify the question belongs to an exam created by this examiner
     const { data: question, error: questionError } = await supabaseAdmin
-      .from("questions")
-      .select("exam_id, exams!inner(examiner_id)")
-      .eq("id", questionId)
+      .from('questions')
+      .select('exam_id, exams!inner(examiner_id)')
+      .eq('id', questionId)
       .single();
 
     if (questionError || !question) {
       return res.status(404).json({
         success: false,
-        message: "Question not found",
+        message: 'Question not found',
       });
     }
 
     if (question.exams.examiner_id !== examinerId) {
       return res.status(403).json({
         success: false,
-        message: "Unauthorized to edit this question",
+        message: 'Unauthorized to edit this question',
       });
     }
 
     // Update the question
     const { data: updatedQuestion, error: updateError } = await supabaseAdmin
-      .from("questions")
+      .from('questions')
       .update({
         question_text,
         option_a,
@@ -47,7 +47,7 @@ const updateQuestion = async (req, res) => {
         option_d,
         correct_answer,
       })
-      .eq("id", questionId)
+      .eq('id', questionId)
       .select()
       .single();
 
@@ -55,14 +55,14 @@ const updateQuestion = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Question updated successfully",
+      message: 'Question updated successfully',
       data: updatedQuestion,
     });
   } catch (error) {
-    console.error("Update question error:", error);
+    console.error('Update question error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to update question",
+      message: 'Failed to update question',
       error: error.message,
     });
   }

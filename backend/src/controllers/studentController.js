@@ -1,14 +1,13 @@
-import { supabaseAdmin } from "../config/database.js";
-import { shuffleArray, calculatePercentage } from "../utils/helpers.js";
+import { supabaseAdmin } from '../config/database.js';
+import { shuffleArray, calculatePercentage } from '../utils/helpers.js';
 
 // Get all published exams available to students
 // Varun start
 const getAvailableExams = async (req, res) => {
   try {
     const { data: exams, error } = await supabaseAdmin
-      .from("exams")
-      .select(
-        `
+      .from('exams')
+      .select(`
         id,
         title,
         topic,
@@ -16,24 +15,21 @@ const getAvailableExams = async (req, res) => {
         duration,
         total_questions,
         published_at
-        `
-      )
-      .eq("is_published", true)
-      .order("published_at", { ascending: false });
+      `)
+      .eq('is_published', true)
+      .order('published_at', { ascending: false });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     res.status(200).json({
       success: true,
       data: exams,
     });
   } catch (error) {
-    console.error("Get available exams error:", error);
+    console.error('Get available exams error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to get exams",
+      message: 'Failed to get exams',
       error: error.message,
     });
   }
@@ -47,29 +43,27 @@ const startExam = async (req, res) => {
 
     // Check if exam exists and is published
     const { data: exam, error: examError } = await supabaseAdmin
-      .from("exams")
-      .select("*")
-      .eq("id", examId)
-      .eq("is_published", true)
+      .from('exams')
+      .select('*')
+      .eq('id', examId)
+      .eq('is_published', true)
       .single();
 
     if (examError || !exam) {
       return res.status(404).json({
         success: false,
-        message: "Exam not found or not available",
+        message: 'Exam not found or not available',
       });
     }
 
     // Get questions
     const { data: questions, error: questionsError } = await supabaseAdmin
-      .from("questions")
-      .select("id, question_text, option_a, option_b, option_c, option_d")
-      .eq("exam_id", examId)
-      .order("question_order", { ascending: true });
+      .from('questions')
+      .select('id, question_text, option_a, option_b, option_c, option_d')
+      .eq('exam_id', examId)
+      .order('question_order', { ascending: true });
 
-    if (questionsError) {
-      throw questionsError;
-    }
+    if (questionsError) throw questionsError;
 
     // Randomize question order for this student
     const questionIds = questions.map((q) => q.id);
@@ -77,7 +71,7 @@ const startExam = async (req, res) => {
 
     // Create exam attempt record
     const { data: attempt, error: attemptError } = await supabaseAdmin
-      .from("student_exam_attempts")
+      .from('student_exam_attempts')
       .insert([
         {
           student_id: studentId,
@@ -89,18 +83,16 @@ const startExam = async (req, res) => {
       .select()
       .single();
 
-    if (attemptError) {
-      throw attemptError;
-    }
+    if (attemptError) throw attemptError;
 
     // Return questions in randomized order
     const randomizedQuestions = randomizedOrder.map((qId) =>
-      questions.find((q) => q.id === qId)
+      questions.find((q) => q.id === qId),
     );
 
     res.status(200).json({
       success: true,
-      message: "Exam started successfully",
+      message: 'Exam started successfully',
       data: {
         attemptId: attempt.id,
         exam: {
@@ -114,10 +106,10 @@ const startExam = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Start exam error:", error);
+    console.error('Start exam error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to start exam",
+      message: 'Failed to start exam',
       error: error.message,
     });
   }
@@ -131,42 +123,40 @@ const submitAnswer = async (req, res) => {
 
     // Verify attempt belongs to student
     const { data: attempt, error: attemptError } = await supabaseAdmin
-      .from("student_exam_attempts")
-      .select("*")
-      .eq("id", attemptId)
-      .eq("student_id", studentId)
+      .from('student_exam_attempts')
+      .select('*')
+      .eq('id', attemptId)
+      .eq('student_id', studentId)
       .single();
 
     if (attemptError || !attempt) {
       return res.status(404).json({
         success: false,
-        message: "Exam attempt not found",
+        message: 'Exam attempt not found',
       });
     }
 
     if (attempt.is_submitted) {
       return res.status(400).json({
         success: false,
-        message: "Exam already submitted",
+        message: 'Exam already submitted',
       });
     }
 
     // Get correct answer
     const { data: question, error: questionError } = await supabaseAdmin
-      .from("questions")
-      .select("correct_answer")
-      .eq("id", questionId)
+      .from('questions')
+      .select('correct_answer')
+      .eq('id', questionId)
       .single();
 
-    if (questionError) {
-      throw questionError;
-    }
+    if (questionError) throw questionError;
 
     const isCorrect = selectedOption === question.correct_answer;
 
     // Upsert response (insert or update if exists)
     const { error: responseError } = await supabaseAdmin
-      .from("student_responses")
+      .from('student_responses')
       .upsert(
         [
           {
@@ -177,24 +167,20 @@ const submitAnswer = async (req, res) => {
             answered_at: new Date(),
           },
         ],
-        {
-          onConflict: "attempt_id,question_id",
-        }
+        { onConflict: 'attempt_id,question_id' },
       );
 
-    if (responseError) {
-      throw responseError;
-    }
+    if (responseError) throw responseError;
 
     res.status(200).json({
       success: true,
-      message: "Answer saved successfully",
+      message: 'Answer saved successfully',
     });
   } catch (error) {
-    console.error("Submit answer error:", error);
+    console.error('Submit answer error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to save answer",
+      message: 'Failed to save answer',
       error: error.message,
     });
   }
@@ -208,23 +194,23 @@ const submitExam = async (req, res) => {
 
     // Verify attempt belongs to student
     const { data: attempt, error: attemptError } = await supabaseAdmin
-      .from("student_exam_attempts")
-      .select("*")
-      .eq("id", attemptId)
-      .eq("student_id", studentId)
+      .from('student_exam_attempts')
+      .select('*')
+      .eq('id', attemptId)
+      .eq('student_id', studentId)
       .single();
 
     if (attemptError || !attempt) {
       return res.status(404).json({
         success: false,
-        message: "Exam attempt not found",
+        message: 'Exam attempt not found',
       });
     }
 
     if (attempt.is_submitted) {
       return res.status(400).json({
         success: false,
-        message: "Exam already submitted",
+        message: 'Exam already submitted',
       });
     }
 
@@ -232,23 +218,21 @@ const submitExam = async (req, res) => {
 
     // Mark attempt as submitted
     await supabaseAdmin
-      .from("student_exam_attempts")
+      .from('student_exam_attempts')
       .update({
         is_submitted: true,
         submission_time: currentTime,
         end_time: currentTime,
       })
-      .eq("id", attemptId);
+      .eq('id', attemptId);
 
     // Get all responses
     const { data: responses, error: responsesError } = await supabaseAdmin
-      .from("student_responses")
-      .select("is_correct")
-      .eq("attempt_id", attemptId);
+      .from('student_responses')
+      .select('is_correct')
+      .eq('attempt_id', attemptId);
 
-    if (responsesError) {
-      throw responsesError;
-    }
+    if (responsesError) throw responsesError;
 
     // Calculate score
     const correctAnswers = responses.filter((r) => r.is_correct).length;
@@ -261,14 +245,14 @@ const submitExam = async (req, res) => {
     const diffInMilliseconds = endTimeUTC - startTimeUTC;
     const calculatedTimeSeconds = Math.max(
       1,
-      Math.ceil(diffInMilliseconds / 1000)
+      Math.ceil(diffInMilliseconds / 1000),
     );
 
     // Get exam duration to cap the time
     const { data: examData } = await supabaseAdmin
-      .from("exams")
-      .select("duration")
-      .eq("id", attempt.exam_id)
+      .from('exams')
+      .select('duration')
+      .eq('id', attempt.exam_id)
       .single();
 
     const examDurationSeconds = examData.duration * 60; // Convert minutes to seconds
@@ -276,12 +260,12 @@ const submitExam = async (req, res) => {
     // Cap time taken at exam duration (for auto-submit cases)
     const timeTakenSeconds = Math.min(
       calculatedTimeSeconds,
-      examDurationSeconds
+      examDurationSeconds,
     );
 
     // Save result
-    const { data: result, error: resultError } = await supabaseAdmin
-      .from("results")
+    const { error: resultError } = await supabaseAdmin
+      .from('results')
       .insert([
         {
           attempt_id: attemptId,
@@ -289,32 +273,30 @@ const submitExam = async (req, res) => {
           exam_id: attempt.exam_id,
           score: correctAnswers,
           total_questions: totalQuestions,
-          percentage: percentage,
+          percentage,
           time_taken: timeTakenSeconds,
         },
       ])
       .select()
       .single();
 
-    if (resultError !== null) {
-      throw resultError;
-    }
+    if (resultError) throw resultError;
 
     res.status(200).json({
       success: true,
-      message: "Exam submitted successfully",
+      message: 'Exam submitted successfully',
       data: {
         score: correctAnswers,
-        totalQuestions: totalQuestions,
-        percentage: percentage,
+        totalQuestions,
+        percentage,
         timeTaken: timeTakenSeconds,
       },
     });
   } catch (error) {
-    console.error("Submit exam error:", error);
+    console.error('Submit exam error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to submit exam",
+      message: 'Failed to submit exam',
       error: error.message,
     });
   }
@@ -327,29 +309,25 @@ const getMyResults = async (req, res) => {
     const studentId = req.user.userId;
 
     const { data: results, error } = await supabaseAdmin
-      .from("results")
-      .select(
-        `
+      .from('results')
+      .select(`
         *,
         exams:exam_id (title, topic, difficulty_level, total_questions)
-        `
-      )
-      .eq("student_id", studentId)
-      .order("evaluated_at", { ascending: false });
+      `)
+      .eq('student_id', studentId)
+      .order('evaluated_at', { ascending: false });
 
-    if (error !== null) {
-      throw error;
-    }
+    if (error) throw error;
 
     res.status(200).json({
       success: true,
       data: results,
     });
   } catch (error) {
-    console.error("Get my results error:", error);
+    console.error('Get my results error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to get results",
+      message: 'Failed to get results',
       error: error.message,
     });
   }
@@ -363,22 +341,20 @@ const getExamResult = async (req, res) => {
 
     // Get result
     const { data: result, error: resultError } = await supabaseAdmin
-      .from("results")
-      .select(
-        `
+      .from('results')
+      .select(`
         *,
         exams:exam_id (title, topic, difficulty_level),
         student_exam_attempts!inner (id)
-        `
-      )
-      .eq("student_id", studentId)
-      .eq("exam_id", examId)
+      `)
+      .eq('student_id', studentId)
+      .eq('exam_id', examId)
       .single();
 
-    if (resultError !== null || result === null) {
+    if (resultError || !result) {
       return res.status(404).json({
         success: false,
-        message: "Result not found",
+        message: 'Result not found',
       });
     }
 
@@ -387,10 +363,10 @@ const getExamResult = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    console.error("Get exam result error:", error);
+    console.error('Get exam result error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to get result",
+      message: 'Failed to get result',
       error: error.message,
     });
   }
@@ -404,51 +380,45 @@ const getExamReview = async (req, res) => {
 
     // Verify attempt belongs to student and is submitted
     const { data: attempt, error: attemptError } = await supabaseAdmin
-      .from("student_exam_attempts")
-      .select("*, exams(*)")
-      .eq("id", attemptId)
-      .eq("student_id", studentId)
-      .eq("is_submitted", true)
+      .from('student_exam_attempts')
+      .select('*, exams(*)')
+      .eq('id', attemptId)
+      .eq('student_id', studentId)
+      .eq('is_submitted', true)
       .single();
 
-    if (attemptError !== null || attempt === null) {
+    if (attemptError || !attempt) {
       return res.status(404).json({
         success: false,
-        message: "Exam attempt not found or not submitted",
+        message: 'Exam attempt not found or not submitted',
       });
     }
 
     // Get all questions with student responses
     const { data: questions, error: questionsError } = await supabaseAdmin
-      .from("questions")
-      .select("*")
-      .eq("exam_id", attempt.exam_id)
-      .order("question_order", { ascending: true });
+      .from('questions')
+      .select('*')
+      .eq('exam_id', attempt.exam_id)
+      .order('question_order', { ascending: true });
 
-    if (questionsError !== null) {
-      throw questionsError;
-    }
+    if (questionsError) throw questionsError;
 
     // Get student responses
     const { data: responses, error: responsesError } = await supabaseAdmin
-      .from("student_responses")
-      .select("*")
-      .eq("attempt_id", attemptId);
+      .from('student_responses')
+      .select('*')
+      .eq('attempt_id', attemptId);
 
-    if (responsesError !== null) {
-      throw responsesError;
-    }
+    if (responsesError) throw responsesError;
 
     // Get result
     const { data: result, error: resultError } = await supabaseAdmin
-      .from("results")
-      .select("*")
-      .eq("attempt_id", attemptId)
+      .from('results')
+      .select('*')
+      .eq('attempt_id', attemptId)
       .single();
 
-    if (resultError !== null) {
-      throw resultError;
-    }
+    if (resultError) throw resultError;
 
     // Combine questions with responses
     const reviewData = questions.map((q) => {
@@ -489,10 +459,10 @@ const getExamReview = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get exam review error:", error);
+    console.error('Get exam review error:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to get exam review",
+      message: 'Failed to get exam review',
       error: error.message,
     });
   }

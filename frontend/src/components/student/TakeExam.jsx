@@ -1,7 +1,7 @@
 // Varun
-import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import api from "../../services/api";
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 
 /**
  * Helper function to shuffle an array in place (Fisher-Yates shuffle)
@@ -40,10 +40,7 @@ export default function TakeExam() {
 
   const handleSubmit = useCallback(
     async (auto = false) => {
-      if (
-        !auto &&
-        !window.confirm("Are you sure you want to submit the exam?")
-      ) {
+      if (!auto && !window.confirm('Are you sure you want to submit the exam?')) {
         return;
       }
 
@@ -55,11 +52,11 @@ export default function TakeExam() {
         // Redirect to review page instead of dashboard
         navigate(`/student/attempts/${attemptId}/review`);
       } catch (error) {
-        alert("Failed to submit exam");
+        alert('Failed to submit exam');
         setSubmitting(false);
       }
     },
-    [attemptId, navigate]
+    [attemptId, navigate],
   );
 
   const startExam = async () => {
@@ -85,8 +82,8 @@ export default function TakeExam() {
       setAttemptId(data.attemptId);
       setTimeLeft(data.exam.duration * 60);
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to start exam");
-      navigate("/student/dashboard");
+      alert(error.response?.data?.message || 'Failed to start exam');
+      navigate('/student/dashboard');
     } finally {
       setLoading(false);
     }
@@ -122,20 +119,20 @@ export default function TakeExam() {
     }));
 
     try {
-      await api.post("/student/answers", {
+      await api.post('/student/answers', {
         attemptId,
         questionId,
         selectedOption: optionValue,
       });
     } catch (error) {
-      console.error("Save answer error:", error);
+      console.error('Save answer error:', error);
     }
   };
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   if (loading) {
@@ -167,7 +164,7 @@ export default function TakeExam() {
                 <div
                   key={option.value}
                   className={`option ${
-                    answers[question.id] === option.value ? "selected" : ""
+                    answers[question.id] === option.value ? 'selected' : ''
                   }`}
                   onClick={() => handleAnswer(question.id, option.value)}
                 >
@@ -205,7 +202,7 @@ export default function TakeExam() {
             disabled={submitting}
             className="btn-primary"
           >
-            {submitting ? "Submitting..." : "Submit Exam"}
+            {submitting ? 'Submitting...' : 'Submit Exam'}
           </button>
         )}
       </div>
