@@ -1,7 +1,7 @@
 // Varun
-import { useState, useEffect, useCallback } from 'react'; // Import useCallback
-import { useParams, useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import api from "../../services/api";
 
 /**
  * Helper function to shuffle an array in place (Fisher-Yates shuffle)
@@ -9,12 +9,12 @@ import api from '../../services/api';
  * @returns {Array} The shuffled array
  */
 const shuffleArray = (array) => {
-  let currentIndex = array.length,
-    randomIndex;
+  let currentIndex = array.length;
+  let randomIndex;
 
   while (currentIndex !== 0) {
     randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
+    currentIndex -= 1;
 
     [array[currentIndex], array[randomIndex]] = [
       array[randomIndex],
@@ -27,6 +27,7 @@ const shuffleArray = (array) => {
 export default function TakeExam() {
   const { examId } = useParams();
   const navigate = useNavigate();
+
   const [exam, setExam] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [attemptId, setAttemptId] = useState(null);
@@ -47,10 +48,8 @@ export default function TakeExam() {
       }
 
       try {
-        const response = await api.post(
-          `/student/attempts/${attemptId}/submit`
-        );
-        // const result = response.data.data; // This line wasn't used
+        await api.post(`/student/attempts/${attemptId}/submit`);
+        // The original line was commented out, keeping the submission logic clean
         setSubmitting(true);
 
         // Redirect to review page instead of dashboard
@@ -66,9 +65,8 @@ export default function TakeExam() {
   const startExam = async () => {
     try {
       const response = await api.post(`/student/exams/${examId}/start`);
-      const data = response.data.data;
+      const { data } = response.data;
       const fetchedQuestions = data.questions;
-
 
       const optionsMap = {};
       fetchedQuestions.forEach((q) => {
@@ -94,65 +92,14 @@ export default function TakeExam() {
     }
   };
 
-  const fetchRemainingTime = async () => {
-    try {
-      const res = await api.get(`/student/attempts/${attemptId}/time`);
-      setTimeLeft(res.data.data.remainingTime);
-    } catch (err) {
-      console.error("Failed to fetch remaining time:", err);
+  useEffect(() => {
+    startExam();
+  }, [examId, navigate]); // Added dependencies for startExam's use of examId and navigate
+
+  useEffect(() => {
+    if (timeLeft <= 0 || loading) {
+      return () => {};
     }
-  };
-
-  useEffect(() => {
-    if (attemptId) fetchRemainingTime();
-
-  }, [attemptId]);
-
-  useEffect(() => {
-    const initializeExam = async () => {
-      try {
-        // Check if an active attempt exists
-        const activeRes = await api.get(`/student/exams/${examId}/active`);
-        const activeData = activeRes.data.data;
-
-        if (activeData.active) {
-          // Resume previous attempt
-          setExam(activeData.exam);
-          setQuestions(activeData.questions);
-          setAttemptId(activeData.attemptId);
-          setAnswers(activeData.answers || {});
-          setTimeLeft(activeData.remainingTime);
-
-          // Shuffle options same way (locally)
-          const optionsMap = {};
-          activeData.questions.forEach((q) => {
-            const options = [
-              { text: q.option_a, value: 1 },
-              { text: q.option_b, value: 2 },
-              { text: q.option_c, value: 3 },
-              { text: q.option_d, value: 4 },
-            ];
-            optionsMap[q.id] = shuffleArray(options);
-          });
-          setShuffledOptions(optionsMap);
-          setLoading(false);
-        } else {
-          // Start a new attempt
-          await startExam();
-        }
-      } catch (err) {
-        console.error('Error resuming or starting exam:', err);
-        alert('Failed to start or resume exam');
-        navigate('/student/dashboard');
-      }
-    };
-
-    initializeExam();
-  }, [examId]);
-
-
-  useEffect(() => {
-    if (loading || !exam) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -166,7 +113,7 @@ export default function TakeExam() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [loading, exam, handleSubmit]); 
+  }, [loading, handleSubmit]); // Kept dependencies as per original fix
 
   const handleAnswer = async (questionId, optionValue) => {
     setAnswers((prevAnswers) => ({
@@ -219,8 +166,9 @@ export default function TakeExam() {
               currentShuffledOptions.map((option, idx) => (
                 <div
                   key={option.value}
-                  className={`option ${answers[question.id] === option.value ? 'selected' : ''
-                    }`}
+                  className={`option ${
+                    answers[question.id] === option.value ? "selected" : ""
+                  }`}
                   onClick={() => handleAnswer(question.id, option.value)}
                 >
                   <span className="option-label">
