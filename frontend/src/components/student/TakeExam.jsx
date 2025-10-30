@@ -39,7 +39,10 @@ export default function TakeExam() {
 
   const handleSubmit = useCallback(
     async (auto = false) => {
-      if (!auto && !window.confirm('Are you sure you want to submit the exam?')) {
+      if (
+        !auto &&
+        !window.confirm("Are you sure you want to submit the exam?")
+      ) {
         return;
       }
 
@@ -53,7 +56,7 @@ export default function TakeExam() {
         // Redirect to review page instead of dashboard
         navigate(`/student/attempts/${attemptId}/review`);
       } catch (error) {
-        alert('Failed to submit exam');
+        alert("Failed to submit exam");
         setSubmitting(false);
       }
     },
@@ -66,7 +69,6 @@ export default function TakeExam() {
       const data = response.data.data;
       const fetchedQuestions = data.questions;
 
-    
       const optionsMap = {};
       fetchedQuestions.forEach((q) => {
         const options = [
@@ -84,8 +86,8 @@ export default function TakeExam() {
       setAttemptId(data.attemptId);
       setTimeLeft(data.exam.duration * 60);
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to start exam');
-      navigate('/student/dashboard');
+      alert(error.response?.data?.message || "Failed to start exam");
+      navigate("/student/dashboard");
     } finally {
       setLoading(false);
     }
@@ -96,7 +98,7 @@ export default function TakeExam() {
   }, []);
 
   useEffect(() => {
-    if (timeLeft <= 0 || loading) return;
+    if (loading || !exam) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -110,7 +112,7 @@ export default function TakeExam() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, loading, handleSubmit]);
+  }, [loading, exam, handleSubmit]); 
 
   const handleAnswer = async (questionId, optionValue) => {
     setAnswers((prevAnswers) => ({
@@ -119,56 +121,56 @@ export default function TakeExam() {
     }));
 
     try {
-      await api.post('/student/answers', {
+      await api.post("/student/answers", {
         attemptId,
         questionId,
         selectedOption: optionValue,
       });
     } catch (error) {
-      console.error('Save answer error:', error);
+      console.error("Save answer error:", error);
     }
   };
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   if (loading) {
-    return <div className='loading'>Loading exam...</div>;
+    return <div className="loading">Loading exam...</div>;
   }
 
   const question = questions[currentQuestion];
   const currentShuffledOptions = question ? shuffledOptions[question.id] : [];
 
   return (
-    <div className='exam-container'>
-      <div className='exam-header'>
+    <div className="exam-container">
+      <div className="exam-header">
         <div>
           <h2>{exam.title}</h2>
           <p>
             Question {currentQuestion + 1} of {exam.totalQuestions}
           </p>
         </div>
-        <div className='timer'>Time Left: {formatTime(timeLeft)}</div>
+        <div className="timer">Time Left: {formatTime(timeLeft)}</div>
       </div>
 
       {question ? (
-        <div className='question-container'>
+        <div className="question-container">
           <h3>{question.question_text}</h3>
 
-          <div className='options'>
+          <div className="options">
             {currentShuffledOptions &&
               currentShuffledOptions.map((option, idx) => (
                 <div
                   key={option.value}
                   className={`option ${
-                    answers[question.id] === option.value ? 'selected' : ''
+                    answers[question.id] === option.value ? "selected" : ""
                   }`}
                   onClick={() => handleAnswer(question.id, option.value)}
                 >
-                  <span className='option-label'>
+                  <span className="option-label">
                     {String.fromCharCode(65 + idx)}
                   </span>
                   <span>{option.text}</span>
@@ -177,14 +179,14 @@ export default function TakeExam() {
           </div>
         </div>
       ) : (
-        <div className='loading'>Loading question...</div>
+        <div className="loading">Loading question...</div>
       )}
 
-      <div className='exam-navigation'>
+      <div className="exam-navigation">
         <button
           onClick={() => setCurrentQuestion((prev) => prev - 1)}
           disabled={currentQuestion === 0}
-          className='btn-secondary'
+          className="btn-secondary"
         >
           Previous
         </button>
@@ -192,17 +194,17 @@ export default function TakeExam() {
         {currentQuestion < questions.length - 1 ? (
           <button
             onClick={() => setCurrentQuestion((prev) => prev + 1)}
-            className='btn-primary'
+            className="btn-primary"
           >
             Next
           </button>
         ) : (
           <button
-            onClick={() => handleSubmit(false)} 
+            onClick={() => handleSubmit(false)}
             disabled={submitting}
-            className='btn-primary'
+            className="btn-primary"
           >
-            {submitting ? 'Submitting...' : 'Submit Exam'}
+            {submitting ? "Submitting..." : "Submit Exam"}
           </button>
         )}
       </div>

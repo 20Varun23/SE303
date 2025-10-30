@@ -1,3 +1,5 @@
+//AI API configuration for Gemini 2.5
+
 // Varun
 import { GoogleGenerativeAI } from '@google/generative-ai';
 

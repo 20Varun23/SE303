@@ -1,3 +1,5 @@
+// email sending configuration
+
 // Suvarna
 import { nodemailer } from 'nodemailer';
 

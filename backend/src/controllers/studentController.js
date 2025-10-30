@@ -196,23 +196,23 @@ const submitExam = async (req, res) => {
 
     // Verify attempt belongs to student
     const { data: attempt, error: attemptError } = await supabaseAdmin
-      .from('student_exam_attempts')
-      .select('*')
-      .eq('id', attemptId)
-      .eq('student_id', studentId)
+      .from("student_exam_attempts")
+      .select("*")
+      .eq("id", attemptId)
+      .eq("student_id", studentId)
       .single();
 
     if (attemptError || !attempt) {
       return res.status(404).json({
         success: false,
-        message: 'Exam attempt not found',
+        message: "Exam attempt not found",
       });
     }
 
     if (attempt.is_submitted) {
       return res.status(400).json({
         success: false,
-        message: 'Exam already submitted',
+        message: "Exam already submitted",
       });
     }
 
@@ -220,19 +220,19 @@ const submitExam = async (req, res) => {
 
     // Mark attempt as submitted
     await supabaseAdmin
-      .from('student_exam_attempts')
+      .from("student_exam_attempts")
       .update({
         is_submitted: true,
         submission_time: currentTime,
         end_time: currentTime,
       })
-      .eq('id', attemptId);
+      .eq("id", attemptId);
 
     // Get all responses
     const { data: responses, error: responsesError } = await supabaseAdmin
-      .from('student_responses')
-      .select('is_correct')
-      .eq('attempt_id', attemptId);
+      .from("student_responses")
+      .select("is_correct")
+      .eq("attempt_id", attemptId);
 
     if (responsesError) throw responsesError;
 
@@ -242,18 +242,32 @@ const submitExam = async (req, res) => {
     const percentage = calculatePercentage(correctAnswers, totalQuestions);
 
     // Calculate time taken - store in seconds
-    const startTimeUTC = new Date(attempt.start_time + 'Z').getTime();
+    const startTimeUTC = new Date(attempt.start_time + "Z").getTime();
     const endTimeUTC = currentTime.getTime();
     const diffInMilliseconds = endTimeUTC - startTimeUTC;
-    const timeTakenSeconds = Math.max(1, Math.ceil(diffInMilliseconds / 1000));
-      
-    console.log('Time calculation debug:');
-    console.log('Difference (ms):', diffInMilliseconds);
-    console.log('Time taken (sec):', timeTakenSeconds);
+    const calculatedTimeSeconds = Math.max(
+      1,
+      Math.ceil(diffInMilliseconds / 1000)
+    );
+
+    // Get exam duration to cap the time
+    const { data: examData } = await supabaseAdmin
+      .from("exams")
+      .select("duration")
+      .eq("id", attempt.exam_id)
+      .single();
+
+    const examDurationSeconds = examData.duration * 60; // Convert minutes to seconds
+
+    // Cap time taken at exam duration (for auto-submit cases)
+    const timeTakenSeconds = Math.min(
+      calculatedTimeSeconds,
+      examDurationSeconds
+    );
 
     // Save result
     const { data: result, error: resultError } = await supabaseAdmin
-      .from('results')
+      .from("results")
       .insert([
         {
           attempt_id: attemptId,
@@ -268,11 +282,11 @@ const submitExam = async (req, res) => {
       .select()
       .single();
 
-    if (resultError!=null) throw resultError;
+    if (resultError != null) throw resultError;
 
     res.status(200).json({
       success: true,
-      message: 'Exam submitted successfully',
+      message: "Exam submitted successfully",
       data: {
         score: correctAnswers,
         totalQuestions: totalQuestions,
@@ -281,10 +295,10 @@ const submitExam = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Submit exam error:', error);
+    console.error("Submit exam error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to submit exam',
+      message: "Auto submitting the exam...",
       error: error.message,
     });
   }
