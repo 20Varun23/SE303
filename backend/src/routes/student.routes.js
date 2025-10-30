@@ -7,7 +7,9 @@ import {
   submitExam,
   getMyResults,
   getExamResult,
-  getExamReview
+  getExamReview,
+  getRemainingTime,
+  getActiveAttempt,
 } from '../controllers/studentController.js';
 
 import { authenticate, isStudent } from '../middleware/auth.js';
@@ -36,5 +38,10 @@ router.get('/exams/:examId/result', getExamResult);
 
 // Get detailed review of completed exam
 router.get('/attempts/:attemptId/review', getExamReview);
+
+// Get remaining time for ongoing exam
+router.get('/attempts/:attemptId/time', getRemainingTime);
+
+router.get('/exams/:examId/active', getActiveAttempt);
 
 export default router;

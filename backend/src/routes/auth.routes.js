@@ -5,7 +5,7 @@ import {
   login,
   logout,
   getProfile,
-  verifyEmail, // <-- 1. IMPORT IT HERE
+  verifyEmail,
 } from '../controllers/authController.js';
 
 import {
@@ -21,7 +21,6 @@ const router = express.Router();
 router.post('/register', registerValidation, validate, register);
 router.post('/login', loginValidation, validate, login);
 
-// --- 2. ADD THIS NEW ROUTE ---
 // This route handles the link the user clicks in their email
 router.get('/verify-email', verifyEmail);
 

@@ -33,7 +33,6 @@ Return the response in this EXACT JSON format:
     const response = await result.response;
     const text = response.text();
 
-    // Clean up the response - remove markdown code blocks if present
     let cleanedText = text.trim();
     if (cleanedText.startsWith('```json')) {
       cleanedText = cleanedText
@@ -57,7 +56,6 @@ Return the response in this EXACT JSON format:
         throw new Error(`Invalid question format at index ${index}`);
       }
 
-      // Convert correct answer letter to number (1-4)
       const correctAnswerMap = { A: 1, B: 2, C: 3, D: 4 };
       const correctAnswerNum = correctAnswerMap[q.correctAnswer.toUpperCase()];
 
