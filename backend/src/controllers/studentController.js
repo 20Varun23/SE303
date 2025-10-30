@@ -279,11 +279,6 @@ const submitExam = async (req, res) => {
       examDurationSeconds
     );
 
-    console.log("Time calculation debug:");
-    console.log("Calculated time (sec):", calculatedTimeSeconds);
-    console.log("Exam duration (sec):", examDurationSeconds);
-    console.log("Final time taken (sec):", timeTakenSeconds);
-
     // Save result
     const { data: result, error: resultError } = await supabaseAdmin
       .from("results")

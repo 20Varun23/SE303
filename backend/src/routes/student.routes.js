@@ -8,8 +8,6 @@ import {
   getMyResults,
   getExamResult,
   getExamReview,
-  getRemainingTime,
-  getActiveAttempt,
 } from '../controllers/studentController.js';
 
 import { authenticate, isStudent } from '../middleware/auth.js';
@@ -40,8 +38,8 @@ router.get('/exams/:examId/result', getExamResult);
 router.get('/attempts/:attemptId/review', getExamReview);
 
 // Get remaining time for ongoing exam
-router.get('/attempts/:attemptId/time', getRemainingTime);
+// router.get('/attempts/:attemptId/time', getRemainingTime);
 
-router.get('/exams/:examId/active', getActiveAttempt);
+// router.get('/exams/:examId/active', getActiveAttempt);
 
 export default router;
