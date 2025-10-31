@@ -23,7 +23,6 @@ export default function ExamResults() {
     fetchResults();
   }, []);
 
-
   return (
     <div className='dashboard'>
       <nav className='navbar'>

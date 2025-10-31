@@ -394,7 +394,7 @@ const getExamReview = async (req, res) => {
       });
     }
 
-    // Get all questions with student responses
+    // Get all questions 
     const { data: questions, error: questionsError } = await supabaseAdmin
       .from('questions')
       .select('*')
